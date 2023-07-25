@@ -34,7 +34,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const { url, type = "png", download = false, fullscreen = false } = req.query;
+  const { url, type = "png", download = false, fullscreen = false, scrollTo = 0 } = req.query;
 
   const outPut = { type, fullPage: fullscreen };
 
@@ -47,15 +47,28 @@ export default async function handler(
     browser = await getBrowserInstance();
     let page = await browser.newPage();
     await page.goto(url);
-    const screenshot = await page.screenshot(outPut);
-
-    if (download) {
-      res.status(200).send(screenshot);
+    if (scrollTo == 0) {
+      await page.evaluate(() => {
+        window.scrollTo(0, 0);
+      });
     } else {
-      res.statusCode = 200;
-      res.setHeader("Content-Type", `image/${type}`);
-      res.end(screenshot);
+      await page.evaluate((scrollTo) => {
+        window.scrollTo(0, scrollTo);
+      }, scrollTo);
     }
+    setTimeout(async () => {
+      const screenshot = await page.screenshot(outPut);
+      if (download) {
+        res.status(200).send(screenshot);
+      } else {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", `image/${type}`);
+        res.end(screenshot);
+      }
+      
+    }, 2000);
+
+
   } catch (error) {
     res.status(500).json({ error: (error as any).message });
   } finally {
