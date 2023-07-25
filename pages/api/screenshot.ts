@@ -52,8 +52,8 @@ export default async function handler(
         window.scrollTo(0, 0);
       });
     } else {
-      await page.evaluate((scrollTo) => {
-        window.scrollTo(0, scrollTo);
+      await page.evaluate((scrollValue : number) => {
+        window.scrollTo(0, scrollValue);
       }, scrollTo);
     }
     setTimeout(async () => {
